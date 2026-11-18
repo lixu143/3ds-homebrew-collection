@@ -91,6 +91,9 @@ $(OUTPUT)-stripped.elf: $(OUTPUT).elf
 # Build the sysmodule CIA with NO encryption and Category:Base from the RSF.
 $(OUTPUT).cia: $(OUTPUT)-stripped.elf
 	@MAKEROM=$(MAKEROM_BIN); \
+	 if ! command -v $$MAKEROM >/dev/null 2>&1 && [ ! -x "$$MAKEROM" ]; then \
+	   echo "  (CIA skipped: makerom not available in this toolchain)"; exit 0; \
+	 fi; \
 	 $$MAKEROM -f cia -o $(OUTPUT).cia \
 		-rsf $(TOPDIR)/httpshare.rsf -target t -exefslogo \
 		-elf $(OUTPUT)-stripped.elf \
