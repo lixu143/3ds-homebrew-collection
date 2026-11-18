@@ -9,6 +9,7 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
 PREFIX ?= $(DEVKITARM)/bin/arm-none-eabi-
+MAKEROM_BIN ?= makerom
 
 #---------------------------------------------------------------------------------
 TARGET  := HTTPShare_Module
@@ -89,7 +90,7 @@ $(OUTPUT)-stripped.elf: $(OUTPUT).elf
 
 # Build the sysmodule CIA with NO encryption and Category:Base from the RSF.
 $(OUTPUT).cia: $(OUTPUT)-stripped.elf
-	@MAKEROM=$(shell command -v makerom 2>/dev/null || echo $(DEVKITPRO)/tools/bin/makerom); \
+	@MAKEROM=$(MAKEROM_BIN); \
 	 $$MAKEROM -f cia -o $(OUTPUT).cia \
 		-rsf $(TOPDIR)/httpshare.rsf -target t -exefslogo \
 		-elf $(OUTPUT)-stripped.elf \
