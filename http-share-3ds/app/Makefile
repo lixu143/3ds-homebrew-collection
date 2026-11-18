@@ -6,12 +6,18 @@ endif
 
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
+PREFIX ?= $(DEVKITARM)/bin/arm-none-eabi-
+MAKEROM_BIN ?= makerom
 
 TARGET   := HTTPShare3DS
 BUILD    := build
 SOURCES  := source ../common
 INCLUDES := source ../common
 ROMFS    := romfs
+
+APP_TITLE        := HTTPShare 3DS
+APP_PRODUCT_CODE := CTR-H-SHRE
+APP_UNIQUE_ID    := 0x5A19
 
 ARCH := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
@@ -42,13 +48,13 @@ $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 clean:
-	@rm -fr $(BUILD) $(TARGET).3dsx $(TARGET).elf $(TARGET).smdh
+	@rm -fr $(BUILD) $(TARGET).3dsx $(TARGET).elf $(TARGET).smdh $(TARGET).cia $(TARGET)-stripped.elf
 
 else
 
 DEPENDS := $(OFILES:.o=.d)
 .PHONY: all
-all: $(OUTPUT).3dsx
+all: $(OUTPUT).3dsx $(OUTPUT).cia
 
 $(OUTPUT).elf: $(OFILES)
 	@echo " linking $@"
@@ -58,6 +64,23 @@ $(OUTPUT).elf: $(OFILES)
 $(OUTPUT).3dsx: $(OUTPUT).elf
 	@echo " building $@"
 	@$(3DSXTOOL) $< $@
+
+$(OUTPUT)-stripped.elf: $(OUTPUT).elf
+	@cp $(OUTPUT).elf $(OUTPUT)-stripped.elf
+	@$(PREFIX)strip $(OUTPUT)-stripped.elf
+
+$(OUTPUT).cia: $(OUTPUT)-stripped.elf
+	@MAKEROM=$(MAKEROM_BIN); \
+	 if ! command -v $$MAKEROM >/dev/null 2>&1 && [ ! -x "$$MAKEROM" ]; then \
+	   echo "  (CIA skipped: makerom not available in this toolchain)"; exit 0; \
+	 fi; \
+	 $$MAKEROM -f cia -o $(OUTPUT).cia \
+		-rsf $(TOPDIR)/httpshare_app.rsf -target t -exefslogo \
+		-elf $(OUTPUT)-stripped.elf \
+		-DAPP_TITLE="$(APP_TITLE)" \
+		-DAPP_PRODUCT_CODE="$(APP_PRODUCT_CODE)" \
+		-DAPP_UNIQUE_ID="$(APP_UNIQUE_ID)"
+	@echo "built ... $(notdir $@)"
 
 -include $(DEPENDS)
 endif

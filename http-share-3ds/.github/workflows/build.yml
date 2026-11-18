@@ -29,13 +29,31 @@ jobs:
           elif command -v pacman >/dev/null 2>&1; then
             pacman -S --noconfirm --needed 3ds-dev || true
           fi
+          # makerom is not part of devkitPro; fetch a prebuilt, glibc-compatible
+          # build from Project_CTR so the app can also be packaged as CIA.
+          MRO=""
+          for ver in v0.19.0 v0.18.4 v0.18.3 v0.18.2 v0.18.1; do
+            rm -rf /tmp/makerom /tmp/makerom.zip
+            if curl -fsSL --retry 2 -o /tmp/makerom.zip \
+              "https://github.com/3DSGuy/Project_CTR/releases/download/makerom-$ver/makerom-$ver-ubuntu_x86_64.zip"; then
+              mkdir -p /tmp/makerom && unzip -o /tmp/makerom.zip -d /tmp/makerom >/dev/null 2>&1 || true
+              CAND=$(find /tmp/makerom -type f -name makerom 2>/dev/null | head -1)
+              if [ -n "$CAND" ]; then
+                chmod +x "$CAND"
+                if ! "$CAND" 2>&1 | grep -q "GLIBC_"; then
+                  MRO="$CAND"; echo "makerom $ver is compatible"; break
+                fi
+              fi
+            fi
+          done
+          echo "MAKEROM_BIN=${MRO:-makerom}" >> $GITHUB_ENV
 
-      - name: Build standalone app (.3dsx)
+      - name: Build standalone app (.3dsx + .cia)
         working-directory: ./app
         run: |
           make clean || true
           make -j2
-          ls -la ./*.3dsx
+          ls -la ./*.3dsx ./*.cia 2>/dev/null || true
 
       - name: Upload app homebrew
         uses: actions/upload-artifact@v4
@@ -43,6 +61,13 @@ jobs:
           name: httpshare-app-3dsx
           path: app/*.3dsx
           if-no-files-found: error
+
+      - name: Upload app CIA
+        uses: actions/upload-artifact@v4
+        with:
+          name: httpshare-app-cia
+          path: app/*.cia
+          if-no-files-found: warn
 
   plugin:
     runs-on: ubuntu-latest

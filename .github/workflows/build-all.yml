@@ -120,6 +120,13 @@ jobs:
           path: http-share-3ds/app/*.3dsx
           if-no-files-found: warn
 
+      - name: Upload HTTP Share app CIA
+        uses: actions/upload-artifact@v4
+        with:
+          name: httpshare-app-cia
+          path: http-share-3ds/app/*.cia
+          if-no-files-found: warn
+
       - name: Build HTTP Share sysmodule
         working-directory: ./http-share-sysmodule
         continue-on-error: true
