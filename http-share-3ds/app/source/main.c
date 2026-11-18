@@ -20,6 +20,33 @@
 #define SOC_ALIGN 0x1000
 #define MAX_LOG   12
 
+/* libctru's default __appInit() calls sdmcInit() and fatalThrow()s when it
+ * fails -> the dreaded black "card was removed" screen at launch. We take
+ * over init, keep the SD result, and report it in the UI instead. */
+static Result s_sdInitResult = 0;
+
+void __appInit(void)
+{
+    srvInit();
+    fsInit();
+    s_sdInitResult = sdmcInit();
+    aptInit();
+    hidInit();
+    acInit();
+    cfguInit();
+}
+
+void __appExit(void)
+{
+    cfguExit();
+    acExit();
+    hidExit();
+    aptExit();
+    if (R_SUCCEEDED(s_sdInitResult)) sdmcExit();
+    fsExit();
+    srvExit();
+}
+
 static C3D_RenderTarget *s_top = NULL, *s_bottom = NULL;
 static C2D_TextBuf  s_bufTop, s_bufBot;
 static C2D_Font     s_font = NULL;
@@ -73,6 +100,11 @@ int main(void)
     osSetSpeedupEnable(true);  /* N3DS clock speedup while app is open */
 
     on_log("HTTP Share 3DS ready");
+    if (R_FAILED(s_sdInitResult)) {
+        on_log("WARNING: SD mount failed - check card");
+    } else {
+        on_log("SD card mounted OK");
+    }
 
     while (aptMainLoop()) {
         gspWaitForVBlank();
@@ -150,7 +182,6 @@ int main(void)
         draw_text(s_bufBot, s_font, 12, 222, 0.5f, C2D_Color32(0x88,0x88,0x88,0xFF),
                   "A: start/stop   START: exit");
 
-        C2D_Flush();
         C2D_Flush();
         gfxFlushBuffers();
         gfxSwapBuffers();

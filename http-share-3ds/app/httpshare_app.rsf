@@ -14,7 +14,7 @@ TitleInfo:
   Version                 : 1
 
 Option:
-  UseOnSD                 : false
+  UseOnSD                 : true
   FreeProductCode         : true
   MediaFootPadding        : false
   EnableCrypt             : false
@@ -112,7 +112,7 @@ AccessControlInfo:
     StoreProcessDataCache: 83
     FlushProcessDataCache: 84
 
-  # Services the app opens: fs, soc (HTTP), ac (WiFi), hid, gsp (screen), cfg.
+  # Services the app opens: fs, soc (HTTP), ac (WiFi), hid, gsp (screen), cfg, apt.
   ServiceAccessControl:
    - fs:USER
    - ac:u
@@ -120,6 +120,7 @@ AccessControlInfo:
    - hid:USER
    - gsp::Gpu
    - cfg:u
+   - apt:u
 
 SystemControlInfo:
   SaveDataSize: 0KB
@@ -130,4 +131,5 @@ SystemControlInfo:
     ac: 0x0004013000002402
     hid: 0x0004013000001d02
     gsp: 0x0004013000001c02
+    apt: 0x0004013000002702
     socket: 0x0004013000002e02
