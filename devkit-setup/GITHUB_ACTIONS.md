@@ -38,20 +38,22 @@ git push -u origin main
 
 1. 打开仓库 → **Actions** → 点进最近一次成功的工作流
 2. 页面底部 **Artifacts** 里，点对应名字下载（zip 包）：
-   - `nfc-toolbox-3ds` → `build/nfc-toolbox-3ds.3dsx`
-   - `ps5-stream-3ds` → `ps5-stream-3ds.3dsx`
-   - `httpshare-app-3dsx` → `HTTPShare3DS.3dsx`
-   - `httpshare-cia` → 两个 CIA（sysmodule + launcher）
+   - `nfc-toolbox-3ds` → `build/nfc-toolbox-3ds.3dsx` ✅ 已验证出包
+   - `ps5-stream-3ds` → `ps5-stream-3ds.3dsx` ✅ 已验证出包
+   - `httpshare-app-3dsx` → `HTTPShare3DS.3dsx` ✅ 已验证出包
 3. `.3dsx` 放进 SD 卡 `/3ds/` 从 Homebrew Launcher 启动；`.cia` 用 FBI 安装。
 
 Artifacts 默认保留 90 天，需要更长可在 workflow 里加 `retention-days`。
 
-## 两个特例（已标注，不会让整体构建失败）
+## 三个特例（不会让整体构建失败）
 
 | 项目 | 缺什么 | 怎么办 |
 |---|---|---|
 | `iptv-3ds` | 3DS 版 FFmpeg（放 `library/FFmpeg`，官方源没有） | 需自行提供 ThirdTube/Video player 分支的 FFmpeg 移植，或改用 PC 转码方案 |
 | `http-share-3ds/plugin` | `libctrpf`（第三方 pacman 源 ThePixellizerOSS） | workflow 已尝试安装，装不上就自动跳过；3GX 插件才需要 |
+| `http-share-sysmodule` 的 CIA | `makerom`（新版 devkitPro Docker 镜像已移除此工具） | ELF 能编译，但 CIA 打包会自动跳过。要出 CIA 需本地装 makerom（Project_CTR 的 `makerom`），或换用旧版工具链镜像 |
+
+**关于 sysmodule CIA**：这是唯一没能在云端自动产出的格式。原因不是代码问题，而是官方 Docker 镜像从某版起不再内置 makerom（全盘搜索确认不存在）。sysmodule 的 `.elf` 本身编译成功，你在本地装好 makerom 后，进入 `http-share-sysmodule/module` 和 `launcher` 直接 `make` 即可生成 CIA。
 
 这两个的 workflow 用了 `continue-on-error`，即使跳过也不影响其他项目出包。
 
