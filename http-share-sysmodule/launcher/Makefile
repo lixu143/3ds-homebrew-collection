@@ -82,7 +82,8 @@ $(OUTPUT)-stripped.elf: $(OUTPUT).elf
 	@$(PREFIX)strip $(OUTPUT)-stripped.elf
 
 $(OUTPUT).cia: $(OUTPUT)-stripped.elf
-	@makerom -f cia -o $(OUTPUT).cia \
+	@MAKEROM=$(shell command -v makerom 2>/dev/null || echo $(DEVKITPRO)/tools/bin/makerom); \
+	 $$MAKEROM -f cia -o $(OUTPUT).cia \
 		-rsf $(TOPDIR)/httpshare_launcher.rsf -target t -exefslogo \
 		-elf $(OUTPUT)-stripped.elf \
 		-DAPP_TITLE="$(APP_TITLE)" \
