@@ -43,23 +43,27 @@ jobs:
             done
             $PAC -S --noconfirm --needed 3ds-mbedtls 2>/dev/null || true
           fi
-          # Locate makerom (needed for CIA packaging); try installing if absent.
+          # makerom is NOT part of devkitPro. It belongs to the separate
+          # Project_CTR repo, and the modern devkitarm image no longer ships it.
+          # Download the prebuilt Ubuntu x86_64 binary from GitHub Releases:
+          # GitHub Actions runners reach releases.githubusercontent.com directly,
+          # so this is unaffected by any local-network/Cloudflare blocking.
           MRO=$(command -v makerom 2>/dev/null || true)
           if [ -z "$MRO" ]; then
             for c in /opt/devkitpro/tools/bin/makerom /opt/devkitpro/bin/makerom /usr/local/bin/makerom; do
               [ -x "$c" ] && MRO="$c" && break
             done
           fi
-          if [ -z "$MRO" ] && [ -n "$PAC" ]; then
-            for pkg in makerom 3ds-makerom ctrtools general-tools; do
-              $PAC -S --noconfirm --needed "$pkg" 2>/dev/null || true
-            done
-            MRO=$(command -v makerom 2>/dev/null || find / -name makerom -type f 2>/dev/null | head -1)
+          if [ -z "$MRO" ]; then
+            echo "=== downloading prebuilt makerom v0.19.0 from Project_CTR ==="
+            curl -fsSL --retry 3 -o /tmp/makerom.zip \
+              https://github.com/3DSGuy/Project_CTR/releases/download/makerom-v0.19.0/makerom-v0.19.0-ubuntu_x86_64.zip || true
+            if [ -s /tmp/makerom.zip ]; then
+              mkdir -p /tmp/makerom && unzip -o /tmp/makerom.zip -d /tmp/makerom >/dev/null 2>&1 || true
+              MRO=$(find /tmp/makerom -type f -name makerom 2>/dev/null | head -1)
+              if [ -n "$MRO" ]; then chmod +x "$MRO"; fi
+            fi
           fi
-          echo "=== devkitpro tools/bin contents ==="
-          ls -la $DEVKITPRO/tools/bin/ 2>/dev/null || true
-          echo "=== makerom/ctrtool search ==="
-          find / -type f \( -name makerom -o -name ctrtool -o -name '3dsbuild' \) 2>/dev/null | head -20 || true
           echo "MAKEROM_BIN=${MRO:-makerom}" >> $GITHUB_ENV
           echo "makerom => ${MRO:-not found (CIA jobs will skip)}"
 
