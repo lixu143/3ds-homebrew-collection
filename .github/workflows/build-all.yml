@@ -51,9 +51,15 @@ jobs:
             done
           fi
           if [ -z "$MRO" ] && [ -n "$PAC" ]; then
-            $PAC -S --noconfirm --needed makerom 3ds-makerom 2>/dev/null || true
-            MRO=$(command -v makerom 2>/dev/null || find /opt/devkitpro -name makerom -type f 2>/dev/null | head -1)
+            for pkg in makerom 3ds-makerom ctrtools general-tools; do
+              $PAC -S --noconfirm --needed "$pkg" 2>/dev/null || true
+            done
+            MRO=$(command -v makerom 2>/dev/null || find / -name makerom -type f 2>/dev/null | head -1)
           fi
+          echo "=== devkitpro tools/bin contents ==="
+          ls -la $DEVKITPRO/tools/bin/ 2>/dev/null || true
+          echo "=== makerom/ctrtool search ==="
+          find / -type f \( -name makerom -o -name ctrtool -o -name '3dsbuild' \) 2>/dev/null | head -20 || true
           echo "MAKEROM_BIN=${MRO:-makerom}" >> $GITHUB_ENV
           echo "makerom => ${MRO:-not found (CIA jobs will skip)}"
 
