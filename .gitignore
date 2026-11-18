@@ -10,6 +10,8 @@ build/
 *.cia
 *.3gx
 *.smdh
+# Application icon SMDH is a source asset and MUST be committed (CI packs it into the CIA)
+!http-share-3ds/app/icon.smdh
 *.bin
 
 # 打包产物（源码已在仓库中，无需提交 zip）

@@ -1,5 +1,5 @@
 BasicInfo:
-  Title                   : HTTPShare 3DS
+  Title                   : WifiShare 3DS
   CompanyCode             : "00"
   ProductCode             : CTR-H-SHRE
   Logo                    : None
@@ -11,7 +11,7 @@ RomFs:
 TitleInfo:
   Category                : Application
   UniqueId                : 0x5A19 # -> TID 00040000005A1902
-  Version                 : 1
+  Version                 : 2
 
 Option:
   UseOnSD                 : true
@@ -27,9 +27,18 @@ AccessControlInfo:
   ReleaseKernelMinor      : "51"
 
   # Ordinary homebrew app permissions (no system/base privileges).
+  # DirectSdmcWrite is REQUIRED: the HTTP server creates directories and
+  # writes uploaded files under sdmc:/3ds/httpshare. Without it the FS
+  # service rejects the write and ErrDisp shows "SD card was removed".
+  # This set mirrors the verified working homebrew CIA (Universal-Updater).
   FileSystemAccess:
    - CategorySystemApplication
+   - CategoryHardwareCheck
+   - CategoryFileSystemTool
+   - Debug
    - DirectSdmc
+   - DirectSdmcWrite
+   - Core
 
   MemoryType                    : Application
   SystemMode                    : 64MB
@@ -112,24 +121,31 @@ AccessControlInfo:
     StoreProcessDataCache: 83
     FlushProcessDataCache: 84
 
-  # Services the app opens: fs, soc (HTTP), ac (WiFi), hid, gsp (screen), cfg, apt.
+  # Services opened by libctru/citro2d. Names are CASE-SENSITIVE:
+  # aptInit() requests "APT:U" (uppercase), not "apt:u".
+  # Mirrors the service list of a verified working homebrew CIA.
   ServiceAccessControl:
-   - fs:USER
+   - APT:U
    - ac:u
-   - soc:U
-   - hid:USER
-   - gsp::Gpu
    - cfg:u
-   - apt:u
+   - fs:USER
+   - gsp::Gpu
+   - gsp::Lcd
+   - hid:USER
+   - soc:U
+   - ptm:u
 
 SystemControlInfo:
   SaveDataSize: 0KB
   RemasterVersion: 0
   StackSize: 0x1000
 
+  # Modules backing the services above (ids from a verified working CIA).
   Dependency:
     ac: 0x0004013000002402
     hid: 0x0004013000001d02
     gsp: 0x0004013000001c02
     apt: 0x0004013000002702
     socket: 0x0004013000002e02
+    cfg: 0x0004013000001702
+    ptm: 0x0004013000002202

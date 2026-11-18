@@ -1,13 +1,12 @@
 /**
  * @file main.c
- * @brief Standalone HTTP Share 3DS app (.3dsx / .cia)
+ * @brief Standalone WifiShare 3DS app (.3dsx / .cia)
  *
  * A foreground UI wrapper around the shared httpshare core.
  * The actual server runs on a background thread so the UI stays responsive.
  * For true in-game background operation, use the 3GX plugin build instead.
  */
 #include <3ds.h>
-#include <3ds/archive.h>
 #include <c2d/base.h>
 #include <c2d/text.h>
 #include <c2d/font.h>
@@ -15,36 +14,22 @@
 #include <string.h>
 #include <stdio.h>
 #include <malloc.h>
+#include <dirent.h>
 
 #include "../../common/httpshare.h"
 
+#define APP_NAME    "WifiShare 3DS"
+#define APP_VERSION "v2.1"
 #define SOC_ALIGN 0x1000
 #define MAX_LOG   12
 
-/* libctru's default __appInit() calls archiveMountSdmc(). If that fails to
- * open ARCHIVE_SDMC the console throws the "card was removed" fatal screen.
- * We override __appInit/__appExit with the exact same sequence as upstream
- * but capture the SD mount result, so a bad/missing mount shows a clear
- * message in the UI instead of a black error screen. */
-static Result s_sdInitResult = 0;
-
-void __appInit(void)
-{
-    srvInit();
-    aptInit();
-    hidInit();
-    fsInit();
-    s_sdInitResult = archiveMountSdmc();
-}
-
-void __appExit(void)
-{
-    archiveUnmountAll();
-    fsExit();
-    hidExit();
-    aptExit();
-    srvExit();
-}
+/* IMPORTANT: do NOT override __appInit()/__appExit(). libctru's default
+ * chain (srvInit/aptInit/hidInit/fsInit/archiveMountSdmc) already mounts
+ * sdmc: and never throws a fatal on failure. The "SD card was removed"
+ * screen is produced by ErrDisp when the FS service rejects sdmc: writes
+ * because the CIA exheader lacks DirectSdmcWrite - that is fixed in the
+ * RSF (AccessControlInfo/FileSystemAccess), not here. Overriding the init
+ * previously hid the real error and broke the userAppInit() hook. */
 
 static C3D_RenderTarget *s_top = NULL, *s_bottom = NULL;
 static C2D_TextBuf  s_bufTop, s_bufBot;
@@ -98,12 +83,11 @@ int main(void)
     svcCreateMutex(&s_logMutex, false);
     osSetSpeedupEnable(true);  /* N3DS clock speedup while app is open */
 
-    on_log("HTTP Share 3DS ready");
-    if (R_FAILED(s_sdInitResult)) {
-        on_log("WARNING: SD mount failed - check card");
-    } else {
-        on_log("SD card mounted OK");
-    }
+    on_log(APP_NAME " " APP_VERSION " ready");
+    /* Non-fatal SD check: opendir() just returns NULL on a bad mount. */
+    DIR *sd = opendir("sdmc:/");
+    if (sd) { closedir(sd); on_log("SD card: OK (sdmc:/ readable)"); }
+    else    { on_log("WARNING: sdmc:/ not accessible"); }
 
     while (aptMainLoop()) {
         gspWaitForVBlank();
@@ -144,7 +128,7 @@ int main(void)
         C2D_SceneBegin(s_top);
         C2D_TextBufClear(s_bufTop);
         draw_text(s_bufTop, s_font, 16, 12, 0.7f, C2D_Color32(0xFF,0xFF,0xFF,0xFF),
-                  "HTTP Share 3DS - Standalone");
+                  APP_NAME "  " APP_VERSION);
         char line[200];
         snprintf(line, sizeof(line), "Status : %s", s_serverStarted ? "RUNNING" : "STOPPED");
         draw_text(s_bufTop, s_font, 16, 56, 0.6f,
