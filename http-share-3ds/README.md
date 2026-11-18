@@ -52,7 +52,17 @@ cd app
 make
 ```
 
-生成 `HTTPShare3DS.3dsx`。放进 SD 卡 `/3ds/` 目录，从 Homebrew Launcher 启动；或再打包成 CIA 用 FBI 安装（可选）。
+生成 `HTTPShare3DS.3dsx`。放进 SD 卡 `/3ds/` 目录，从 Homebrew Launcher 启动。
+
+同一个 `make` 还会产出 **`HTTPShare3DS.cia`**（需要 `makerom` 在 PATH 里，缺失时自动跳过、不影响 `.3dsx`）。这是**普通应用 CIA**（`Category: Application`，TID `00040000005A1902`），和 sysmodule 版完全不同：
+
+- ✅ **低风险**：装 SD 卡即可，普通应用权限，没有 bootloop / 变砖风险，不需要备份 NAND；
+- ✅ 装好后出现在 HOME 菜单，点开即用，按 START 退出；
+- ✅ 卸载随时可在 FBI → Titles 里删。
+
+用 FBI 安装 `.cia`（装 SD 或 NAND 都行，建议 SD），或从 GitHub Actions 的 `httpshare-app-cia` artifact 下载现成的。功能与 `.3dsx` 完全一样，只是多了一个 HOME 菜单图标入口。
+
+> 注意：App 版是**前台**的——退出就停止服务，玩游戏时不后台。要后台传文件还是得形态 B（3GX 插件）或 sysmodule 版。
 
 操作：
 1. 按 **A** 启动服务（屏幕显示 `http://192.168.x.x:8080/`）
