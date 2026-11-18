@@ -43,6 +43,19 @@ jobs:
             done
             $PAC -S --noconfirm --needed 3ds-mbedtls 2>/dev/null || true
           fi
+          # Locate makerom (needed for CIA packaging); try installing if absent.
+          MRO=$(command -v makerom 2>/dev/null || true)
+          if [ -z "$MRO" ]; then
+            for c in /opt/devkitpro/tools/bin/makerom /opt/devkitpro/bin/makerom /usr/local/bin/makerom; do
+              [ -x "$c" ] && MRO="$c" && break
+            done
+          fi
+          if [ -z "$MRO" ] && [ -n "$PAC" ]; then
+            $PAC -S --noconfirm --needed makerom 3ds-makerom 2>/dev/null || true
+            MRO=$(command -v makerom 2>/dev/null || find /opt/devkitpro -name makerom -type f 2>/dev/null | head -1)
+          fi
+          echo "MAKEROM_BIN=${MRO:-makerom}" >> $GITHUB_ENV
+          echo "makerom => ${MRO:-not found (CIA jobs will skip)}"
 
       - name: Build NFC Toolbox
         working-directory: ./nfc-toolbox-3ds
