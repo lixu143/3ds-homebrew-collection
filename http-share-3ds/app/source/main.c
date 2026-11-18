@@ -7,6 +7,7 @@
  * For true in-game background operation, use the 3GX plugin build instead.
  */
 #include <3ds.h>
+#include <3ds/archive.h>
 #include <c2d/base.h>
 #include <c2d/text.h>
 #include <c2d/font.h>
@@ -20,30 +21,28 @@
 #define SOC_ALIGN 0x1000
 #define MAX_LOG   12
 
-/* libctru's default __appInit() calls sdmcInit() and fatalThrow()s when it
- * fails -> the dreaded black "card was removed" screen at launch. We take
- * over init, keep the SD result, and report it in the UI instead. */
+/* libctru's default __appInit() calls archiveMountSdmc(). If that fails to
+ * open ARCHIVE_SDMC the console throws the "card was removed" fatal screen.
+ * We override __appInit/__appExit with the exact same sequence as upstream
+ * but capture the SD mount result, so a bad/missing mount shows a clear
+ * message in the UI instead of a black error screen. */
 static Result s_sdInitResult = 0;
 
 void __appInit(void)
 {
     srvInit();
-    fsInit();
-    s_sdInitResult = sdmcInit();
     aptInit();
     hidInit();
-    acInit();
-    cfguInit();
+    fsInit();
+    s_sdInitResult = archiveMountSdmc();
 }
 
 void __appExit(void)
 {
-    cfguExit();
-    acExit();
+    archiveUnmountAll();
+    fsExit();
     hidExit();
     aptExit();
-    if (R_SUCCEEDED(s_sdInitResult)) sdmcExit();
-    fsExit();
     srvExit();
 }
 
