@@ -47,13 +47,17 @@ clean:
 else
 
 DEPENDS := $(OFILES:.o=.d)
+.PHONY: all
+all: $(OUTPUT).3dsx
+
 $(OUTPUT).elf: $(OFILES)
 	@echo " linking $@"
 	@$(CC) $(LDFLAGS) -o $@ $(OFILES) $(LIBPATHS) $(LIBS)
 
+3DSXTOOL := $(if $(wildcard $(DEVKITPRO)/tools/bin/3dsxtool),$(DEVKITPRO)/tools/bin/3dsxtool,$(DEVKITPRO)/tools/bin/3dsx)
 $(OUTPUT).3dsx: $(OUTPUT).elf
 	@echo " building $@"
-	@3dsx $< $@
+	@$(3DSXTOOL) $< $@
 
 -include $(DEPENDS)
 endif

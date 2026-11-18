@@ -33,12 +33,10 @@ void __appInit(void)
 {
     srvInit();          /* required for every service */
     fsInit();           /* sdmc access for file transfers */
-    sdmcInit();
 }
 
 void __appExit(void)
 {
-    sdmcExit();
     fsExit();
     srvExit();
 }

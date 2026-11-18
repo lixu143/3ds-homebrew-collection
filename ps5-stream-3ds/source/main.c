@@ -181,9 +181,9 @@ static void gather_input(InputState *out)
     /* R3 (stick click) can be added here if your libctru exposes KEY_CS */
 
     /* Touch bottom screen drives a virtual stick relative to touch origin. */
-    touchPosition tp;
-    if (hidTouchCount() > 0) {
-        hidTouchRead(&tp, 0);
+    touchPosition tp = {0};
+    if (hidKeysHeld() & KEY_TOUCH) {
+        hidTouchRead(&tp);
         int cx = 160, cy = 190;             /* touch zone center (bottom 320x240) */
         int dx = (int)tp.px - cx;
         int dy = (int)tp.py - cy;
@@ -343,7 +343,7 @@ int main(void)
     audio_stop();
     mjpeg_stop();
     renderer_exit();
-    s_bot && C3D_RenderTargetDelete(s_bot);
+    if (s_bot) C3D_RenderTargetDelete(s_bot);
     C2D_TextBufDelete(s_bufBot);
     C2D_Fini();
     gfxExit();

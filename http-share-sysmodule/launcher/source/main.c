@@ -26,6 +26,7 @@
 
 #define SOC_ALIGN      0x1000
 #define SOC_BUFFERSIZE 0x50000
+#include <malloc.h>
 
 static void show_ip(u32 *outAddr)
 {

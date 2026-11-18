@@ -14,6 +14,10 @@
 #include <strings.h>
 #include <stdlib.h>
 
+#ifndef SO_RCVTIMEO
+#define SO_RCVTIMEO 0x1006
+#endif
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
