@@ -20,6 +20,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <limits.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -27,6 +28,11 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
+
+/* devkitPro newlib exposes SO_RCVTIMEO inconsistently; define fallback */
+#ifndef SO_RCVTIMEO
+#define SO_RCVTIMEO 0x1006
+#endif
 
 /* ---- tunables -------------------------------------------------------- */
 #define AUDIO_RATE       48000

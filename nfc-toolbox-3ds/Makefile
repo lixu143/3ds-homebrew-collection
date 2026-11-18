@@ -40,8 +40,8 @@ CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS	:= $(ARCH)
 LDFLAGS	:= $(ARCH) -specs=3dsx.specs -g -Wl,--gc-sections
 
-# 3dsx 打包工具
-3DSX	:= $(DEVKITPRO)/tools/bin/3dsx
+# 3dsx 打包工具 (name differs across devkitPro versions: 3dsxtool / 3dsx)
+3DSX := $(if $(wildcard $(DEVKITPRO)/tools/bin/3dsxtool),$(DEVKITPRO)/tools/bin/3dsxtool,$(DEVKITPRO)/tools/bin/3dsx)
 LIBDIRS	:= $(DEVKITPRO)/libctru/lib $(DEVKITPRO)/portlibs/3ds/lib
 
 #---------------------------------------------------------------------------------

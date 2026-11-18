@@ -39,7 +39,7 @@ LDFLAGS  = -specs=3dsx.specs $(ARCH) -Wl,--gc-sections
 
 LIBS := -lctru -lm
 
-LIBDIRS := $(CTRULIB) $(DEVKITPRO)/portlibs/armv6k
+LIBDIRS := $(CTRULIB) $(DEVKITPRO)/libctru $(DEVKITPRO)/portlibs/armv6k
 
 #---------------------------------------------------------------------------------
 ifneq ($(BUILD),$(notdir $(CURDIR)))
@@ -51,7 +51,7 @@ export DEPSDIR := $(CURDIR)/$(BUILD)
 
 CFILES  := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 SFILES  := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-OFILES  := $(CFILES:.c=.o) $(SFILES:.s=.o)
+export OFILES  := $(CFILES:.c=.o) $(SFILES:.s=.o)
 
 export INCLUDE := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
                   $(foreach dir,$(LIBDIRS),-I$(dir)/include) \

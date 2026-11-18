@@ -150,8 +150,8 @@ int main(void)
         draw_text(s_bufBot, s_font, 12, 222, 0.5f, C2D_Color32(0x88,0x88,0x88,0xFF),
                   "A: start/stop   START: exit");
 
-        C2D_Flush(s_top);
-        C2D_Flush(s_bottom);
+        C2D_Flush();
+        C2D_Flush();
         gfxFlushBuffers();
         gfxSwapBuffers();
     }
