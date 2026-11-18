@@ -1,0 +1,16 @@
+# 示例：把你自己的公开免费频道 M3U 列表放到这个路径
+# sdmc:/3ds/iptv-3ds/channels.m3u
+#
+# 或者，把列表的在线 URL 写到：
+# sdmc:/3ds/iptv-3ds/source.txt
+# App 启动时会下载它覆盖上面的 channels.m3u
+#
+# 重要：只有 H.264、分辨率不超过 800x240、码率不超过 2.5Mbps 的频道
+# 才能在 New 3DS 上播放。其余频道会被 App 过滤掉（按 X 可查看全部）。
+#
+# 下面是一份格式示例（不是可用源，请把你找到的公开源 url 填进来）：
+#EXTM3U
+#EXTINF:-1 group-title="News" bandwidth=1200000,示例新闻 240p
+http://example.com/live/240p/stream.m3u8
+#EXTINF:-1 group-title="Music" bandwidth=800000,示例音乐 240p
+http://example.com/live/music.m3u8

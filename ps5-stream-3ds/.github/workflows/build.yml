@@ -1,0 +1,44 @@
+name: Build PS5 Stream 3DS
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+      options: --user root
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Verify toolchain
+        run: |
+          echo "DEVKITPRO=$DEVKITPRO"
+          echo "DEVKITARM=$DEVKITARM"
+          arm-none-eabi-gcc --version | head -n 1
+
+      - name: Install extra 3DS libraries
+        run: |
+          if command -v dkp-pacman >/dev/null 2>&1; then
+            dkp-pacman -S --noconfirm --needed 3ds-dev 3ds-libjpeg || true
+          elif command -v pacman >/dev/null 2>&1; then
+            pacman -S --noconfirm --needed 3ds-dev 3ds-libjpeg || true
+          fi
+
+      - name: Build .3dsx
+        run: |
+          make clean || true
+          make -j2
+          ls -la ./*.3dsx
+
+      - name: Upload homebrew
+        uses: actions/upload-artifact@v4
+        with:
+          name: ps5-stream-3ds
+          path: ./*.3dsx
+          if-no-files-found: error

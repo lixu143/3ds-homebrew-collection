@@ -1,0 +1,25 @@
+Author: workbuddy
+
+Version: # Plugin version
+    Major: 1
+    Minor: 0
+    Revision: 0
+
+Targets: # 0 = all games; fill a game's low TitleID to bind to one game
+
+Title: HTTP Share 3DS
+
+Summary: Background HTTP file server for SD card
+
+Description: |
+  Runs a small HTTP server in the background while you play.
+  From a PC on the same Wi-Fi, browse / upload / download / delete files
+  inside sdmc:/3ds/httpshare/ without leaving your game.
+
+  Hotkey: SELECT to open the status panel.
+
+Compatibility: Any
+
+MemorySize: 5MiB
+
+UsePrivateMemory: false

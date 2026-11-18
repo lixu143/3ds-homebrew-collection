@@ -1,0 +1,92 @@
+name: Build all 3DS projects
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+      options: --user root
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Verify toolchain
+        run: |
+          echo "DEVKITPRO=$DEVKITPRO"
+          echo "DEVKITARM=$DEVKITARM"
+          arm-none-eabi-gcc --version | head -n 1
+
+      - name: Install extra 3DS libraries
+        run: |
+          if command -v dkp-pacman >/dev/null 2>&1; then
+            dkp-pacman -S --noconfirm --needed 3ds-dev 3dstools 3ds-libjpeg 3ds-libcurl 3ds-mbedtls || true
+          elif command -v pacman >/dev/null 2>&1; then
+            pacman -S --noconfirm --needed 3ds-dev 3dstools 3ds-libjpeg 3ds-libcurl 3ds-mbedtls || true
+          fi
+
+      - name: Build NFC Toolbox
+        working-directory: ./nfc-toolbox-3ds
+        continue-on-error: true
+        run: |
+          make clean || true
+          make -j2
+
+      - name: Upload NFC Toolbox
+        uses: actions/upload-artifact@v4
+        with:
+          name: nfc-toolbox-3ds
+          path: nfc-toolbox-3ds/build/*.3dsx
+          if-no-files-found: warn
+
+      - name: Build PS5 Stream
+        working-directory: ./ps5-stream-3ds
+        continue-on-error: true
+        run: |
+          make clean || true
+          make -j2
+
+      - name: Upload PS5 Stream
+        uses: actions/upload-artifact@v4
+        with:
+          name: ps5-stream-3ds
+          path: ps5-stream-3ds/*.3dsx
+          if-no-files-found: warn
+
+      - name: Build HTTP Share app
+        working-directory: ./http-share-3ds/app
+        continue-on-error: true
+        run: |
+          make clean || true
+          make -j2
+
+      - name: Upload HTTP Share app
+        uses: actions/upload-artifact@v4
+        with:
+          name: httpshare-app-3dsx
+          path: http-share-3ds/app/*.3dsx
+          if-no-files-found: warn
+
+      - name: Build HTTP Share sysmodule
+        working-directory: ./http-share-sysmodule
+        continue-on-error: true
+        run: |
+          make clean || true
+          make -j2
+
+      - name: Upload sysmodule CIAs
+        uses: actions/upload-artifact@v4
+        with:
+          name: httpshare-cia
+          path: |
+            http-share-sysmodule/module/*.cia
+            http-share-sysmodule/launcher/*.cia
+          if-no-files-found: warn
+
+      # IPTV needs a 3DS FFmpeg build at iptv-3ds/library/FFmpeg.
+      # The 3GX plugin needs libctrpf from a third-party repo.
+      # Both are skipped here; build them in their own repos if you add those deps.

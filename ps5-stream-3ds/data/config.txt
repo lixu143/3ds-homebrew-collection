@@ -1,0 +1,15 @@
+# PS5-Stream-3DS 配置示例
+# 拷到 SD 卡: sdmc:/3ds/ps5-stream/config.txt
+# 也可在 App 里用方向键 + X(键盘) 修改后自动保存
+
+# PS5 的局域网 IP
+host=192.168.1.50
+
+# PBS Payload 串流端口(默认 9999)
+port=9999
+
+# MJPEG 流路径(PBS Payload 用 /frames)
+path=/frames
+
+# 画面适配: 0=fit 完整显示(留黑边) 1=fill 填满裁切 2=stretch 拉伸
+fit=0

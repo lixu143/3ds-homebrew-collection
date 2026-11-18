@@ -1,0 +1,52 @@
+name: Build HTTP Share Sysmodule
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+      options: --user root
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Verify toolchain
+        run: |
+          echo "DEVKITPRO=$DEVKITPRO"
+          echo "DEVKITARM=$DEVKITARM"
+          arm-none-eabi-gcc --version | head -n 1
+          makerom --version 2>&1 | head -n 2 || true
+
+      - name: Install extra 3DS libraries
+        run: |
+          if command -v dkp-pacman >/dev/null 2>&1; then
+            dkp-pacman -S --noconfirm --needed 3ds-dev 3dstools || true
+          elif command -v pacman >/dev/null 2>&1; then
+            pacman -S --noconfirm --needed 3ds-dev 3dstools || true
+          fi
+
+      - name: Build both CIAs
+        run: |
+          make clean || true
+          make -j2
+          ls -la module/*.cia launcher/*.cia
+
+      - name: Upload sysmodule CIA
+        uses: actions/upload-artifact@v4
+        with:
+          name: httpshare-sysmodule-cia
+          path: module/*.cia
+          if-no-files-found: error
+
+      - name: Upload launcher CIA
+        uses: actions/upload-artifact@v4
+        with:
+          name: httpshare-launcher-cia
+          path: launcher/*.cia
+          if-no-files-found: error

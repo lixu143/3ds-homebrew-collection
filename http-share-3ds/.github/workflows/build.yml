@@ -1,0 +1,87 @@
+name: Build HTTP Share 3DS
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+      options: --user root
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Verify toolchain
+        run: |
+          echo "DEVKITPRO=$DEVKITPRO"
+          echo "DEVKITARM=$DEVKITARM"
+          arm-none-eabi-gcc --version | head -n 1
+
+      - name: Install extra 3DS libraries
+        run: |
+          if command -v dkp-pacman >/dev/null 2>&1; then
+            dkp-pacman -S --noconfirm --needed 3ds-dev || true
+          elif command -v pacman >/dev/null 2>&1; then
+            pacman -S --noconfirm --needed 3ds-dev || true
+          fi
+
+      - name: Build standalone app (.3dsx)
+        working-directory: ./app
+        run: |
+          make clean || true
+          make -j2
+          ls -la ./*.3dsx
+
+      - name: Upload app homebrew
+        uses: actions/upload-artifact@v4
+        with:
+          name: httpshare-app-3dsx
+          path: app/*.3dsx
+          if-no-files-found: error
+
+  plugin:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+      options: --user root
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Verify toolchain
+        run: |
+          echo "DEVKITPRO=$DEVKITPRO"
+          echo "DEVKITARM=$DEVKITARM"
+
+      # libctrpf comes from a third-party pacman repo (ThePixellizerOSS),
+      # not the official devkitPro repos. If unavailable, this job is skipped.
+      - name: Try install libctrpf
+        continue-on-error: true
+        run: |
+          if command -v dkp-pacman >/dev/null 2>&1; then
+            dkp-pacman -S --noconfirm --needed 3ds-dev libctrpf || true
+          fi
+
+      - name: Build 3GX plugin (.3gx)
+        working-directory: ./plugin
+        continue-on-error: true
+        run: |
+          if [ ! -d "$DEVKITPRO/libctrpf" ]; then
+            echo "::warning::libctrpf not found - skipping plugin build."
+            exit 0
+          fi
+          make clean || true
+          make -j2
+          ls -la ./*.3gx
+
+      - name: Upload plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: httpshare-plugin-3gx
+          path: plugin/*.3gx
+          if-no-files-found: warn

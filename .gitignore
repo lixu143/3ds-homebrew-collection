@@ -1,0 +1,27 @@
+# WorkBuddy 内部数据（不推送）
+.workbuddy/
+
+# 编译产物
+build/
+*.o
+*.d
+*.elf
+*.3dsx
+*.cia
+*.3gx
+*.smdh
+*.bin
+
+# 打包产物（源码已在仓库中，无需提交 zip）
+*.zip
+
+# 安装包/二进制工具（体积大且可从官网重新下载）
+*.exe
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 系统缩略图
+Thumbs.db
+.DS_Store
