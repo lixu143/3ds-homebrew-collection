@@ -89,7 +89,8 @@ $(OUTPUT)-stripped.elf: $(OUTPUT).elf
 
 # Build the sysmodule CIA with NO encryption and Category:Base from the RSF.
 $(OUTPUT).cia: $(OUTPUT)-stripped.elf
-	@makerom -f cia -o $(OUTPUT).cia \
+	@MAKEROM=$(shell command -v makerom 2>/dev/null || echo $(DEVKITPRO)/tools/bin/makerom); \
+	 $$MAKEROM -f cia -o $(OUTPUT).cia \
 		-rsf $(TOPDIR)/httpshare.rsf -target t -exefslogo \
 		-elf $(OUTPUT)-stripped.elf \
 		-DAPP_TITLE="$(APP_TITLE)" \
