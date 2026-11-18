@@ -67,7 +67,7 @@ $(BUILD)/$(TARGET).elf: $(OBJECTS) | $(BUILD)
 # 生成 .3dsx (3dsx 工具打包 elf + romfs)
 $(BUILD)/$(TARGET).3dsx: $(BUILD)/$(TARGET).elf
 	@echo " 3DSX $@"
-	@$(3DSX) $< $@ --romfs=$(ROMFS)
+	@$(3DSX) $< $@
 
 # 生成 .cia (需安装 bannertool + makerom)
 cia: $(BUILD)/$(TARGET).elf
