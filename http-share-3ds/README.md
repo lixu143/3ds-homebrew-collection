@@ -1,6 +1,10 @@
-# HTTP Share 3DS
+# WifiShare 3DS（无线传文件）
 
-New 3DS 上的后台 HTTP 文件服务器：在同一 WiFi 下，用电脑浏览器就能给 3DS 的 SD 卡**上传 / 下载 / 删除**文件。核心是纯 C 的 HTTP 引擎（`common/`），提供两种外壳：
+New 3DS 上的 HTTP 文件服务器：在同一 WiFi 下，用电脑浏览器就能给 3DS 的 SD 卡**上传 / 下载 / 删除**文件。核心是纯 C 的 HTTP 引擎（`common/`），提供两种外壳。
+
+> **v2.1 起**：CIA 已带自制图标（WiFi + 文件夹，蓝底白图）和正式名字 —— 英文 `WifiShare 3DS`、中文 `无线传文件`。图标由 `app/tools/make_smdh.py` 纯 Python 生成（`app/icon.smdh`），打包时通过 makerom `-icon` 嵌入 NCCH 与 CIA Meta。
+>
+> **v2.1 同时修复了"SD 卡被拔出"启动崩溃**：根因是 exheader 缺 `DirectSdmcWrite`（服务器要写 SD，只读权限不够）以及服务名 `apt:u` 大小写错误（libctru 实际请求 `APT:U`），再加上 CIA 原先完全没有 icon 文件。已按通过验证的 homebrew CIA 配置补齐权限、恢复 libctru 默认初始化。界面顶部会显示 `WifiShare 3DS  v2.1`，装完请以此确认刷的是新版。
 
 | 形态 | 产物 | 后台能力 | 适合 |
 |---|---|---|---|
