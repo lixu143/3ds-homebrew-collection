@@ -5,7 +5,6 @@
 #include "mjpeg.h"
 
 #include <3ds.h>
-#include <jpeglib.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -14,6 +13,9 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <limits.h>
+
+#include <jpeglib.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -21,6 +23,10 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
+
+#ifndef SO_RCVTIMEO
+#define SO_RCVTIMEO 0x1006
+#endif
 
 /* newlib on 3DS has no reliable strcasestr; use our own. */
 static char *ci_strstr(const char *hay, const char *needle)
@@ -39,7 +45,7 @@ static char *ci_strstr(const char *hay, const char *needle)
 
 /* ---- soc service buffer (must be aligned, lives for the process) ------ */
 #define SOC_BUFFERSIZE 0x50000
-static __attribute__((aligned(0x1000))) u8 s_socbuf[SOC_BUFFERSIZE];
+static __attribute__((aligned(0x1000))) u32 s_socbuf[SOC_BUFFERSIZE/4];
 static int s_soc_ready = 0;
 
 /* ---- double-buffered decoded frames ---------------------------------- */
