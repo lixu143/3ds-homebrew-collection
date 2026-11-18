@@ -64,9 +64,23 @@ make
 - ✅ 装好后出现在 HOME 菜单，点开即用，按 START 退出；
 - ✅ 卸载随时可在 FBI → Titles 里删。
 
-用 FBI 安装 `.cia`（装 SD 或 NAND 都行，建议 SD），或从 GitHub Actions 的 `httpshare-app-cia` artifact 下载现成的。功能与 `.3dsx` 完全一样，只是多了一个 HOME 菜单图标入口。
+用 FBI 安装 `.cia`（**务必装到 SD，不要装 NAND**），或从 GitHub Actions 的 `httpshare-app-cia` artifact 下载现成的。功能与 `.3dsx` 完全一样，只是多了一个 HOME 菜单图标入口。
 
 > 注意：App 版是**前台**的——退出就停止服务，玩游戏时不后台。要后台传文件还是得形态 B（3GX 插件）或 sysmodule 版。
+
+### 卸载 / 为什么「系统设置 → 数据管理 → 软件」里找不到、删不掉
+
+**这是所有自制 CIA 的固有现象，不是本软件的故障。** 自制 CIA 用的是伪造签名（fake-signed）ticket，而系统设置的「数据管理 → Nintendo 3DS → 软件」读取 `title.db` 时会用 `.cmd` 校验标题签名：校验不过的标题会显示为灰色「?」图标、名字 `????????`、大小 0，或者干脆不列出，而且**无法从那里删除**。HOME 菜单能显示图标，是因为它只枚举 SD 卡上的内容目录、不做签名校验。
+
+顺带一提：**别把自制 CIA 装到 NAND** —— 带伪签名 ticket 的标题在 NAND 上时，系统设置进入数据管理会直接触发 `svcBreak` 卡死。装 SD 没这个问题。
+
+按下面任一条卸载（按推荐顺序）：
+
+1. **FBI（首选）**：打开 FBI → `Titles` → 选 `SD`（不要动 NAND 里的红色系统标题）→ 找到 ProductCode **`CTR-H-SHRE`** 或 TitleID **`00040000005A1902`** 的绿色条目 → 按 A → `Delete Title And Ticket`（连 ticket 一起删最干净）。重启后桌面图标消失。
+2. **GodMode9**：开机按住 **START** 进入 GM9 → `Title Manager` → `SD Card` → 找到 `00040000005A1902` → `Manage Title` → `Uninstall title`。
+3. **改用 `.3dsx`（最省事，推荐长期用这个）**：把 `WifiShare3DS-v2.1.3dsx` 放进 SD 卡 `/3ds/`，从 Homebrew Launcher 启动。它**不写 title.db / ticket.db**，卸载就是在电脑上删掉这个文件，完全不存在「删不掉」的问题。桌面图标是 CIA 独有的代价。
+
+> 如果只是想升级版本，不用先卸载：FBI 直接覆盖安装同 TID 的新 `.cia` 即可。
 
 操作：
 1. 按 **A** 启动服务（屏幕显示 `http://192.168.x.x:8080/`）
