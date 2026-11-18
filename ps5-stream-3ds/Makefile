@@ -20,10 +20,11 @@ ARCH := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mfpu=vfpv2 -mword-relocati
 
 CFLAGS := -g -O2 -Wall -Wextra -ffunction-sections \
           $(ARCH) $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+          -I$(DEVKITPRO)/libctru/include -I$(DEVKITPRO)/portlibs/3ds/include \
           -D_3DS -DARM11 -D__ARM__
 
 CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
-LDFLAGS  := $(ARCH) -Wl,--gc-sections,--as-needed
+LDFLAGS  := $(ARCH) -specs=3dsx.specs -Wl,--gc-sections,--as-needed
 
 # libjpeg is a standard devkitPro 3DS portlib: pacman -S 3ds-libjpeg
 LIBS := -ljpeg -lcitro2d -lcitro3d -lctru -lm
@@ -48,7 +49,7 @@ $(BUILD):
 
 $(TARGET).elf: $(OFILES)
 	@echo "linking $@"
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ $^ -L$(DEVKITPRO)/libctru/lib -L$(DEVKITPRO)/portlibs/3ds/lib $(LIBS)
 
 $(TARGET).3dsx: $(TARGET).elf
 	@if [ -f $(ICON) ]; then \

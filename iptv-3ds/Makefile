@@ -32,6 +32,7 @@ ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mfpu=vfpv2 -mword-relocati
 
 CFLAGS	:=	-g -O2 -Wall -Wextra -ffunction-sections \
 			$(ARCH) $(INCLUDES) \
+			-I$(DEVKITPRO)/libctru/include -I$(DEVKITPRO)/portlibs/3ds/include \
 			-I$(FFMPEG_DIR)/include \
 			-D_3DS -DARM11 -D__ARM__ $(CFLAGS)
 
@@ -64,7 +65,7 @@ $(BUILD):
 
 $(TARGET).elf: $(OFILES)
 	@echo "linking $@"
-	$(CC) $(LDFLAGS) -o $@ $^ -L$(FFMPEG_DIR)/lib $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ $^ -L$(DEVKITPRO)/libctru/lib -L$(DEVKITPRO)/portlibs/3ds/lib -L$(FFMPEG_DIR)/lib $(LIBS)
 
 # icon.png is optional: provide one for a nice Home Menu icon, otherwise
 # the .3dsx still builds (it just won't have a custom SMDH).

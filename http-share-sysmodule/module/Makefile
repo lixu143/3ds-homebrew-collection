@@ -8,6 +8,7 @@ endif
 
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
+PREFIX ?= $(DEVKITARM)/bin/arm-none-eabi-
 
 #---------------------------------------------------------------------------------
 TARGET  := HTTPShare_Module
@@ -79,6 +80,8 @@ DEPENDS := $(OFILES:.o=.d)
 all: $(OUTPUT).cia
 
 $(OUTPUT).elf: $(OFILES)
+	@echo " linking $@"
+	@$(CC) $(LDFLAGS) -o $@ $(OFILES) $(LIBPATHS) $(LIBS)
 
 $(OUTPUT)-stripped.elf: $(OUTPUT).elf
 	@cp $(OUTPUT).elf $(OUTPUT)-stripped.elf

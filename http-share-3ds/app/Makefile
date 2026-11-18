@@ -16,12 +16,12 @@ ROMFS    := romfs
 ARCH := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
 CFLAGS   := -g -Wall -O2 $(ARCH) -ffunction-sections -fno-strict-aliasing
-CFLAGS   += $(INCLUDE) -D__3DS__
+CFLAGS   += $(INCLUDE) -I$(DEVKITPRO)/libctru/include -I$(DEVKITPRO)/portlibs/3ds/include -D__3DS__
 CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
 ASFLAGS  := $(ARCH)
 LDFLAGS  := $(ARCH) -specs=3dsx.specs -g -Wl,--gc-sections
 LIBS     := -lcitro2d -lcitro3d -lctru -lm
-LIBDIRS  := $(CTRULIB) $(PORTLIBS)
+LIBDIRS  := $(CTRULIB) $(PORTLIBS) $(DEVKITPRO)/libctru/lib $(DEVKITPRO)/portlibs/3ds/lib
 export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))

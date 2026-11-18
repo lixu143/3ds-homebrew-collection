@@ -34,14 +34,15 @@ export PATH := $(DEVKITARM)/bin:$(PATH)
 
 ARCH	:= -march=armv6k -mtune=mpcore -mfloat-abi=hard -mfpu=vfpv2 -mword-relocations
 CFLAGS	:= -g -O2 -Wall -Wextra -MMD -MP -fno-omit-frame-pointer $(ARCH) \
-		   -D__3DS__ -DARM11 -D_ARM11_ $(addprefix -I,$(INCLUDE))
+		   -D__3DS__ -DARM11 -D_ARM11_ $(addprefix -I,$(INCLUDE)) \
+		   -I$(DEVKITPRO)/libctru/include
 CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS	:= $(ARCH)
 LDFLAGS	:= $(ARCH) -specs=3dsx.specs -g -Wl,--gc-sections
 
 # 3dsx 打包工具
 3DSX	:= $(DEVKITPRO)/tools/bin/3dsx
-LIBDIRS	:= $(PORTLIBS)
+LIBDIRS	:= $(DEVKITPRO)/libctru/lib $(DEVKITPRO)/portlibs/3ds/lib
 
 #---------------------------------------------------------------------------------
 # 构建目标
@@ -61,7 +62,7 @@ $(SOURCE)/%.o: $(SOURCE)/%.c
 # 链接 .elf
 $(BUILD)/$(TARGET).elf: $(OBJECTS) | $(BUILD)
 	@echo " LINK $@"
-	@$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LDFLAGS) -L$(LIBDIRS) $(LIBS)
+	@$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(addprefix -L,$(LIBDIRS)) $(LIBS)
 
 # 生成 .3dsx (3dsx 工具打包 elf + romfs)
 $(BUILD)/$(TARGET).3dsx: $(BUILD)/$(TARGET).elf

@@ -17,16 +17,26 @@ jobs:
 
       - name: Verify toolchain
         run: |
+          export PATH=$DEVKITARM/bin:$DEVKITPRO/tools/bin:$PATH
           echo "DEVKITPRO=$DEVKITPRO"
           echo "DEVKITARM=$DEVKITARM"
           arm-none-eabi-gcc --version | head -n 1
 
       - name: Install extra 3DS libraries
         run: |
-          if command -v dkp-pacman >/dev/null 2>&1; then
-            dkp-pacman -S --noconfirm --needed 3ds-dev 3dstools 3ds-libjpeg 3ds-libcurl 3ds-mbedtls || true
-          elif command -v pacman >/dev/null 2>&1; then
-            pacman -S --noconfirm --needed 3ds-dev 3dstools 3ds-libjpeg 3ds-libcurl 3ds-mbedtls || true
+          export PATH=$DEVKITARM/bin:$DEVKITPRO/tools/bin:$PATH
+          # Core libs (libctru/citro3d/citro2d/3dstools) are preinstalled in the image.
+          # Portlibs use inconsistent package names across repos - try each candidate.
+          PAC=$(command -v dkp-pacman || command -v pacman || true)
+          if [ -n "$PAC" ]; then
+            $PAC -S --noconfirm --needed 3ds-dev 3dstools || true
+            for pkg in 3ds-libjpeg libjpeg jpeg; do
+              $PAC -S --noconfirm --needed "$pkg" 2>/dev/null && break || true
+            done
+            for pkg in 3ds-libcurl libcurl curl; do
+              $PAC -S --noconfirm --needed "$pkg" 2>/dev/null && break || true
+            done
+            $PAC -S --noconfirm --needed 3ds-mbedtls 2>/dev/null || true
           fi
 
       - name: Build NFC Toolbox
