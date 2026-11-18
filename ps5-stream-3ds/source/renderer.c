@@ -23,6 +23,7 @@ static C3D_RenderTarget *s_target = NULL;
 /* Texture + upload buffer. C3D textures need power-of-two dimensions. */
 static C3D_Tex   s_tex;
 static C2D_Image s_img;
+static Tex3DS_SubTexture s_subtex;   /* describes the visible (non-padding) area */
 static uint8_t  *s_upload = NULL;   /* POT-sized RGBA buffer */
 static size_t    s_upload_cap = 0;
 static int       s_tex_w = 0, s_tex_h = 0;
@@ -82,14 +83,17 @@ static int ensure_texture(int w, int h)
     s_tex_w = tw;
     s_tex_h = th;
 
-    /* C2D image descriptor: only the visible (non-padding) area. */
+    /* C2D image descriptor: only the visible (non-padding) area.
+     * UV coordinates are u20 fixed point (1.0 == 1<<20). */
+    memset(&s_subtex, 0, sizeof(s_subtex));
+    s_subtex.width  = (u16)w;
+    s_subtex.height = (u16)h;
+    s_subtex.left  = 0;
+    s_subtex.top   = 0;
+    s_subtex.right  = (u32)((float)w / tw * (float)(1u << 20));
+    s_subtex.bottom = (u32)((float)h / th * (float)(1u << 20));
     s_img.tex = &s_tex;
-    s_img.subrect = (C2D_TexCoords){
-        .ul = { 0.0f, 0.0f },
-        .ur = { (float)w / tw, 0.0f },
-        .lr = { (float)w / tw, (float)h / th },
-        .ll = { 0.0f, (float)h / th }
-    };
+    s_img.subtex = &s_subtex;
     return 0;
 }
 
@@ -132,7 +136,11 @@ void renderer_show(uint8_t *rgba, int w, int h, int fit_mode)
     dx = (SW - dw) / 2.0f;
     dy = (SH - dh) / 2.0f;
 
-    C2D_DrawImage(s_img, dx, dy, 0.0f, dw, dh, C2D_DefaultTextureColor);
+    /* New citro2d: C2D_DrawImageAt(img, x, y, depth, tint, scaleX, scaleY).
+     * The subtex already carries the true w/h, so scale relative to it. */
+    float scaleX = dw / (float)w;
+    float scaleY = dh / (float)h;
+    C2D_DrawImageAt(s_img, dx, dy, 0.0f, NULL, scaleX, scaleY);
     gfxFlushBuffers();
     gfxSwapBuffers();
 }
